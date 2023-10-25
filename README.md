@@ -27,7 +27,7 @@ See the old tutorial on Branch [v1.0.0](../../tree/v1.0.0).
 
 # Nazberry Pi Modifications
 
-The following assumes that you have Raspberry Pi OS installed and your Pi is up to date with `sudo apt upgrade && sudo apt upgrade`.
+The following assumes that you have Raspberry Pi OS installed and your Pi is up to date with `sudo apt update && sudo apt upgrade`.
 
 ### Install Git & Clone repo
 
