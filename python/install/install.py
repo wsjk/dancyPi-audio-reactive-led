@@ -10,7 +10,7 @@ from shutil import copy2
 
 def install_dependencies():
     print("================== Start Installing PIP and PIPX ==================")
-    os.system("sudo apt install pipx -y")
+    os.system("sudo apt update")
     os.system("sudo apt install python3-pip -y")
     print("================== Completed Installing PIP ==================")
 
@@ -26,10 +26,8 @@ def install_dependencies():
     os.system("sudo apt install libatlas3-base libgfortran5 -y")
     print("================== Completed Installing Fortran ==================")
 
-    print("================== Start Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
-    os.system("sudo apt install python3-numpy -y")
-    os.system("sudo apt install python3-scipy -y")    
-    os.system("sudo pip3 install numpy scipy==1.4.1 pyaudio pyqtgraph --break-system-packages")
+    print("================== Start Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")        
+    os.system("sudo pip3 install scipy numpy pyaudio pyqtgraph --break-system-packages")
     print("================== Completed Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
 
     print("================== Start Installing rpi_ws281x ==================")
