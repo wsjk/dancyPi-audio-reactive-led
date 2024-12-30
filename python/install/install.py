@@ -10,12 +10,12 @@ from shutil import copy2
 
 def install_dependencies():
     print("================== Start Installing PIP and PIPX ==================")
-    os.system("sudo apt install pipx")
+    os.system("sudo apt install pipx -y")
     os.system("sudo apt install python3-pip -y")
     print("================== Completed Installing PIP ==================")
 
     print("================== Start Updating PIP ==================")
-    os.system("sudo pip3 install --upgrade pip --break-system-packages")
+    os.system("sudo pip3 install --upgrade pip --break-system-packages -y")
     print("================== Completed Updating PIP ==================")
 
     print("================== Start Installing Setuptools and Libatlas ==================")
