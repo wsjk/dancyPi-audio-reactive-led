@@ -26,7 +26,8 @@ def install_dependencies():
     os.system("sudo apt install libatlas3-base libgfortran5 -y")
     print("================== Completed Installing Fortran ==================")
 
-    print("================== Start Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")        
+    print("================== Start Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
+    os.system("sudo apt install python3-pyaudio -y")        
     os.system("sudo pip3 install scipy numpy pyaudio pyqtgraph --break-system-packages")
     print("================== Completed Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
 
