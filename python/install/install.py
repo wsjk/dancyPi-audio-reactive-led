@@ -27,9 +27,7 @@ def install_dependencies():
     print("================== Completed Installing Fortran ==================")
 
     print("================== Start Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
-    os.system("sudo pipx install numpy")
-    os.system("sudo pipx install scipy")
-    os.system("sudo pipx install pyaudio")
+    os.system("sudo pipx install numpy")    
     os.system("sudo pipx install pyqtgraph")
     os.system("sudo pip3 install numpy scipy==1.4.1 pyaudio pyqtgraph")
     print("================== Completed Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
