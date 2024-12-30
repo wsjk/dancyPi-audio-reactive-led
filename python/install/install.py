@@ -15,7 +15,7 @@ def install_dependencies():
     print("================== Completed Installing PIP ==================")
 
     print("================== Start Updating PIP ==================")
-    os.system("sudo pip3 install --upgrade pip --break-system-packages -y")
+    os.system("sudo pip3 install --upgrade pip --break-system-packages")
     print("================== Completed Updating PIP ==================")
 
     print("================== Start Installing Setuptools and Libatlas ==================")
@@ -27,9 +27,9 @@ def install_dependencies():
     print("================== Completed Installing Fortran ==================")
 
     print("================== Start Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
-    os.system("sudo pipx install numpy")    
-    os.system("sudo pipx install pyqtgraph")
-    os.system("sudo pip3 install numpy scipy==1.4.1 pyaudio pyqtgraph")
+    os.system("sudo apt install python3-numpy -y")
+    os.system("sudo apt install python3-scipy -y")    
+    os.system("sudo pip3 install numpy scipy==1.4.1 pyaudio pyqtgraph --break-system-packages")
     print("================== Completed Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
 
     print("================== Start Installing rpi_ws281x ==================")
