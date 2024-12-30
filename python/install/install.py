@@ -9,16 +9,17 @@ from shutil import copy2
 
 
 def install_dependencies():
-    print("================== Start Installing PIP ==================")
+    print("================== Start Installing PIP and PIPX ==================")
+    os.system("sudo apt install pipx")
     os.system("sudo apt install python3-pip -y")
     print("================== Completed Installing PIP ==================")
 
     print("================== Start Updating PIP ==================")
-    os.system("sudo pip3 install --upgrade pip")
+    os.system("sudo pip3 install --upgrade pip --break-system-packages")
     print("================== Completed Updating PIP ==================")
 
     print("================== Start Installing Setuptools and Libatlas ==================")
-    os.system("sudo apt install python-setuptools libatlas-base-dev -y")
+    os.system("sudo apt install python3-setuptools libatlas-base-dev -y")
     print("================== Completed Installing Setuptools and Libatlas ==================")
 
     print("================== Start Installing Fortran ==================")
@@ -26,12 +27,15 @@ def install_dependencies():
     print("================== Completed Installing Fortran ==================")
 
     print("================== Start Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
-    os.system("sudo apt install python-numpy python-scipy python-pyaudio python-pyqtgraph -y")
+    os.system("sudo pipx install numpy")
+    os.system("sudo pipx install scipy")
+    os.system("sudo pipx install pyaudio")
+    os.system("sudo pipx install pyqtgraph")
     os.system("sudo pip3 install numpy scipy==1.4.1 pyaudio pyqtgraph")
     print("================== Completed Installing Numpy, Scipy, PyAudio, PyQtgraph ==================")
 
     print("================== Start Installing rpi_ws281x ==================")
-    os.system("sudo pip3 install rpi_ws281x")
+    os.system("sudo pip3 install rpi_ws281x==4.3.3 --break-system-packages")
     print("================== Completed Installing rpi_ws281x ==================")
 
 
@@ -41,7 +45,7 @@ def replace_asound():
     print("================== Completed copying to /etc/asound.conf ==================")
 
 
-def edit_alsa_conf():
+def edit_alsa_conf():   
     print("================== Creating backup of alsa.conf ==================")
     copy2('/usr/share/alsa/alsa.conf', '/usr/share/alsa/alsa.conf.bak')
     print("================== Completed backup of alsa.conf -> alsa.conf.bak ==================")
