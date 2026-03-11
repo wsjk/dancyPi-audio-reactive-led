@@ -43,7 +43,7 @@ if DEVICE == 'blinkstick':
     SOFTWARE_GAMMA_CORRECTION = True
     """Set to True because blinkstick doesn't use hardware dithering"""
 
-USE_GUI = False
+USE_GUI = True
 """Whether or not to display a PyQtGraph GUI plot of visualization"""
 
 DISPLAY_FPS = True
