@@ -1,7 +1,6 @@
 from __future__ import print_function
 from __future__ import division
 
-import platform
 import numpy as np
 import config
 
@@ -14,17 +13,31 @@ _prev_pixels = np.tile(253, (3, config.N_PIXELS))
 pixels = np.tile(1, (3, config.N_PIXELS))
 """Pixel values for the LED strip"""
 
+_update_counter = 0
+"""Counter to force full update every N frames"""
+
 def update():
     """Writes new LED values to the Raspberry Pi's LED strip
 
     Raspberry Pi uses the rpi_ws281x to control the LED strip directly.
     This function updates the LED strip with new values.
     """
-    global pixels, _prev_pixels
+    global pixels, _prev_pixels, _update_counter
     # Truncate values and cast to integer
     pixels = np.clip(pixels, 0, 255).astype(int)
     # Optional gamma correction
     p = _gamma[pixels] if config.SOFTWARE_GAMMA_CORRECTION else np.copy(pixels)
+
+    # Check if any pixels have changed
+    pixels_changed = not np.array_equal(p, _prev_pixels)
+
+    if not pixels_changed and _update_counter < 100:
+        _update_counter += 1
+        return  # Skip update if nothing changed
+
+    # Force update every 100 frames to prevent drift
+    _update_counter = 0
+
     # Encode 24-bit LED values in 32 bit integers
     r = np.left_shift(p[0][:].astype(int), 8)
     g = np.left_shift(p[1][:].astype(int), 16)

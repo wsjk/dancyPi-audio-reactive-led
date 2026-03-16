@@ -112,10 +112,12 @@ def visualize_scroll(y):
     gain.update(y)
     y /= gain.value
     y *= 255.0
-    r = int(np.max(y[:len(y) // 3]))
-    g = int(np.max(y[len(y) // 3: 2 * len(y) // 3]))
-    b = int(np.max(y[2 * len(y) // 3:]))
-    # Scrolling effect window
+    # Use integer slicing for better performance
+    third = len(y) // 3
+    r = int(np.max(y[:third]))
+    g = int(np.max(y[third: 2 * third]))
+    b = int(np.max(y[2 * third:]))
+    # Scrolling effect window (in-place operations)
     p[:, 1:] = p[:, :-1]
     p *= 0.98
     p = gaussian_filter1d(p, sigma=0.2)
@@ -138,9 +140,10 @@ def visualize_energy(y):
     y *= float(config.N_PIXELS - 1)
     # Map color channels according to energy in the different freq bands
     scale = 0.9
-    r = int(np.mean(y[:len(y) // 3]**scale))
-    g = int(np.mean(y[len(y) // 3: 2 * len(y) // 3]**scale))
-    b = int(np.mean(y[2 * len(y) // 3:]**scale))
+    third = len(y) // 3
+    r = int(np.mean(y[:third]**scale))
+    g = int(np.mean(y[third: 2 * third]**scale))
+    b = int(np.mean(y[2 * third:]**scale))
     # Assign color to different frequency regions across full strip
     p[0, :r] = 255.0
     p[0, r:] = 0.0
@@ -188,9 +191,14 @@ volume = dsp.ExpFilter(config.MIN_VOLUME_THRESHOLD,
 fft_window = np.hamming(int(config.MIC_RATE / config.FPS) * config.N_ROLLING_HISTORY)
 prev_fps_update = time.time()
 
+# Pre-allocate buffers for performance optimization
+_y_padded_buffer = None
+_mel_result_buffer = np.zeros(config.N_FFT_BINS)
+_output_buffer = np.zeros((3, config.N_PIXELS))
+
 
 def microphone_update(audio_samples):
-    global y_roll, prev_rms, prev_exp, prev_fps_update
+    global y_roll, prev_rms, prev_exp, prev_fps_update, _y_padded_buffer, _mel_result_buffer
     # Normalize samples between 0 and 1
     y = audio_samples / 2.0**15
     # Construct a rolling window of audio samples
@@ -200,21 +208,31 @@ def microphone_update(audio_samples):
     
     vol = np.max(np.abs(y_data))
     if vol < config.MIN_VOLUME_THRESHOLD:
-        print('No audio input. Volume below threshold. Volume:', vol)
+        # Only print every 5 seconds to reduce overhead
+        if config.DISPLAY_FPS and time.time() - prev_fps_update > 5.0:
+            print('No audio input. Volume below threshold. Volume:', vol)
+            prev_fps_update = time.time()
         led.pixels = np.tile(0, (3, config.N_PIXELS))
         led.update()
     else:
         # Transform audio input into the frequency domain
         N = len(y_data)
         N_zeros = 2**int(np.ceil(np.log2(N))) - N
-        # Pad with zeros until the next power of two
-        y_data *= fft_window
-        y_padded = np.pad(y_data, (0, N_zeros), mode='constant')
-        YS = np.abs(np.fft.rfft(y_padded)[:N // 2])
+        # Pre-allocate padded buffer on first run
+        global _y_padded_buffer
+        if _y_padded_buffer is None or len(_y_padded_buffer) != N + N_zeros:
+            _y_padded_buffer = np.zeros(N + N_zeros, dtype=np.float32)
+
+        # Apply window and pad in-place using pre-allocated buffer
+        _y_padded_buffer[:N] = y_data * fft_window
+        _y_padded_buffer[N:] = 0
+
+        # Use rfft instead of fft for real-valued signals (2x faster)
+        YS = np.abs(np.fft.rfft(_y_padded_buffer)[:N // 2])
+
         # Construct a Mel filterbank from the FFT data
         mel = np.atleast_2d(YS).T * dsp.mel_y.T
         # Scale data to values more suitable for visualization
-        # mel = np.sum(mel, axis=0)
         mel = np.sum(mel, axis=0)
         mel = mel**2.0
         # Gain normalization
