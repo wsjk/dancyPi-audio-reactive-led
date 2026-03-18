@@ -1,13 +1,15 @@
 from __future__ import print_function
 from __future__ import division
+import sys
 import time
+import atexit
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
 import config
 import microphone
 import dsp
 import led
-import sys
+import gpio_controls
 
 visualization_type = sys.argv[1]
 
@@ -108,7 +110,9 @@ gain = dsp.ExpFilter(np.tile(0.01, config.N_FFT_BINS),
 def visualize_scroll(y):
     """Effect that originates in the center and scrolls outwards"""
     global p
-    y = y**2.0
+    # Use dynamic sensitivity from GPIO controls
+    sensitivity = gpio_controls.get_current_sensitivity()
+    y = y**sensitivity
     gain.update(y)
     y /= gain.value
     y *= 255.0
@@ -265,6 +269,13 @@ visualization_effect = visualization_type
 
 
 if __name__ == '__main__':
+    # Register cleanup function for GPIO
+    atexit.register(gpio_controls.cleanup)
+
+    # Initialize GPIO controls (pass this module for visualization switching)
+    import sys as current_module
+    gpio_controls.init_gpio_controls(current_module.modules[__name__])
+
     if config.USE_GUI:
         import pyqtgraph as pg
         from pyqtgraph.Qt import QtGui, QtCore
