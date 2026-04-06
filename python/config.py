@@ -46,7 +46,7 @@ if DEVICE == 'blinkstick':
 USE_GUI = False
 """Whether or not to display a PyQtGraph GUI plot of visualization"""
 
-DISPLAY_FPS = True
+DISPLAY_FPS = False
 """Whether to display the FPS when running (can reduce performance)"""
 
 N_PIXELS = 144
@@ -58,7 +58,7 @@ GAMMA_TABLE_PATH = os.path.join(os.path.dirname(__file__), 'gamma_table.npy')
 MIC_RATE = 48000
 """Sampling frequency of the microphone in Hz"""
 
-FPS = 50
+FPS = 40
 """Desired refresh rate of the visualization (frames per second)
 
 FPS indicates the desired refresh rate, or frames-per-second, of the audio

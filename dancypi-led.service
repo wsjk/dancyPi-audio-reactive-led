@@ -1,0 +1,23 @@
+[Unit]
+Description=DancyPi Audio Reactive LED Visualization
+After=sound.target network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/pi/dancyPi-audio-reactive-led
+ExecStartPre=/bin/sleep 10
+ExecStart=/home/pi/dancyPi-audio-reactive-led/start_optimized.sh spectrum
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Performance optimizations
+Nice=-10
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=50
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,16 @@
+# Core dependencies for audio-reactive LED strip
+# Optimized for Raspberry Pi 3B
+
+# Audio processing
+pyaudio>=0.2.11
+numpy>=1.19.5,<1.24.0  # Use older numpy for better RPi3 compatibility
+scipy>=1.5.4,<1.8.0    # Use older scipy for better RPi3 compatibility
+
+# GUI (optional - disabled by default for performance)
+# Uncomment if you want to enable USE_GUI=True in config.py
+# pyqtgraph>=0.11.0
+# PyQt5>=5.15.0
+
+# LED control for Raspberry Pi
+rpi_ws281x>=4.3.0
+
