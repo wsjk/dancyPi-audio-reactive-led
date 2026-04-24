@@ -90,19 +90,28 @@ def interpolate(y, new_length):
     return z
 
 
-r_filt = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
+_half_pixels = config.N_PIXELS // 2
+
+r_filt = dsp.ExpFilter(np.tile(0.01, _half_pixels),
                        alpha_decay=0.2, alpha_rise=0.99)
-g_filt = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
+g_filt = dsp.ExpFilter(np.tile(0.01, _half_pixels),
                        alpha_decay=0.05, alpha_rise=0.3)
-b_filt = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
+b_filt = dsp.ExpFilter(np.tile(0.01, _half_pixels),
                        alpha_decay=0.1, alpha_rise=0.5)
-common_mode = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
+common_mode = dsp.ExpFilter(np.tile(0.01, _half_pixels),
                        alpha_decay=0.99, alpha_rise=0.01)
-p_filt = dsp.ExpFilter(np.tile(1, (3, config.N_PIXELS // 2)),
+p_filt = dsp.ExpFilter(np.tile(1, (3, _half_pixels)),
                        alpha_decay=0.1, alpha_rise=0.99)
-p = np.tile(1.0, (3, config.N_PIXELS // 2))
+p = np.tile(1.0, (3, _half_pixels))
 gain = dsp.ExpFilter(np.tile(0.01, config.N_FFT_BINS),
                      alpha_decay=0.001, alpha_rise=0.99)
+
+# Per-bin gain for spectrum normalization so all frequency bands are visible
+_spectrum_gain = dsp.ExpFilter(np.tile(0.01, config.N_FFT_BINS),
+                               alpha_decay=0.005, alpha_rise=0.99)
+
+# Scroll decay tuned to strip length: ~1% brightness remains at the outermost pixel
+_scroll_decay = max(0.01 ** (1.0 / _half_pixels), 0.9)
 
 
 def visualize_scroll(y):
@@ -117,7 +126,8 @@ def visualize_scroll(y):
     b = int(np.max(y[2 * len(y) // 3:]))
     # Scrolling effect window
     p[:, 1:] = p[:, :-1]
-    p *= 0.98
+    # Decay tuned so the edge of the strip retains ~1% brightness
+    p *= _scroll_decay
     p = gaussian_filter1d(p, sigma=0.2)
     # Create new color originating at the center
     p[0, 0] = r
@@ -134,12 +144,16 @@ def visualize_energy(y):
     gain.update(y)
     y /= gain.value
     # Scale by the width of the LED strip
-    y *= float((config.N_PIXELS // 2) - 1)
+    y *= float(_half_pixels)
     # Map color channels according to energy in the different freq bands
     scale = 0.9
     r = int(np.mean(y[:len(y) // 3]**scale))
     g = int(np.mean(y[len(y) // 3: 2 * len(y) // 3]**scale))
     b = int(np.mean(y[2 * len(y) // 3:]**scale))
+    # Ensure the effect can reach the full strip extent
+    r = min(r, _half_pixels)
+    g = min(g, _half_pixels)
+    b = min(b, _half_pixels)
     # Assign color to different frequency regions
     p[0, :r] = 255.0
     p[0, r:] = 0.0
@@ -157,13 +171,16 @@ def visualize_energy(y):
     return np.concatenate((p[:, ::-1], p), axis=1)
 
 
-_prev_spectrum = np.tile(0.01, config.N_PIXELS // 2)
+_prev_spectrum = np.tile(0.01, _half_pixels)
 
 
 def visualize_spectrum(y):
     """Effect that maps the Mel filterbank frequencies onto the LED strip"""
     global _prev_spectrum
-    y = np.copy(interpolate(y, config.N_PIXELS // 2))
+    # Per-bin normalization so all frequency bands contribute visible output
+    _spectrum_gain.update(y)
+    y = y / np.maximum(_spectrum_gain.value, 1e-5)
+    y = np.copy(interpolate(y, _half_pixels))
     common_mode.update(y)
     diff = y - _prev_spectrum
     _prev_spectrum = np.copy(y)
@@ -175,7 +192,7 @@ def visualize_spectrum(y):
     r = np.concatenate((r[::-1], r))
     g = np.concatenate((g[::-1], g))
     b = np.concatenate((b[::-1], b))
-    output = np.array([r, g,b]) * 255
+    output = np.array([r, g, b]) * 255
     return output
 
 
